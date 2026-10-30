@@ -18,6 +18,26 @@ function terminalOutput(s,data,credit){
   if(s.pendingBytes+size>327680)throw Error('Terminal transport exceeded its bounded pending output');
   s.pending.push({data,credit});s.pendingBytes+=size;
 }
+// Suppress only the initial ash banner, including when it spans serial frames.
+// The command itself runs inside the real PTY; later shell output is untouched.
+function finishTerminalStartup(s,stripBanner=false){
+  const startup=s.startup;if(!startup)return;s.startup=null;clearTimeout(startup.timer);
+  const bytes=new Uint8Array(startup.size);let offset=0;for(const part of startup.parts){bytes.set(part,offset);offset+=part.length;}
+  let output=bytes;
+  if(stripBanner){
+    let text='';for(let i=0;i<bytes.length;i+=8192)text+=String.fromCharCode(...bytes.subarray(i,i+8192));
+    const match=/BusyBox v[^\r\n]*built-in shell \(ash\)\r?\nEnter 'help' for a list of built-in commands\.\r?\n/.exec(text);
+    if(match){output=new Uint8Array(bytes.length-match[0].length);output.set(bytes.subarray(0,match.index));output.set(bytes.subarray(match.index+match[0].length),match.index);}
+  }
+  if(output.length)terminalOutput(s,output,startup.credit);else acknowledgeTerminal(s,startup.credit);
+}
+function terminalStartupOutput(s,bytes,credit){
+  const startup=s.startup;if(!startup){terminalOutput(s,bytes,credit);return;}
+  startup.parts.push(bytes);startup.size+=bytes.length;startup.credit+=credit;
+  let text='';for(const part of startup.parts)for(let i=0;i<part.length;i+=8192)text+=String.fromCharCode(...part.subarray(i,i+8192));
+  if(/Enter 'help' for a list of built-in commands\.\r?\n/.test(text))finishTerminalStartup(s,true);
+  else if(startup.size>=16384)finishTerminalStartup(s);
+}
 function attachTerminalRenderer(id,view){
   const s=terminalSession(id);if(s.view)throw Error('Terminal already has a view');s.view=view;
   if(s.snapshot)view.write(s.snapshot,()=>{});s.snapshot='';
@@ -42,7 +62,7 @@ function sendTerminalBytes(id,bytes){
   for(let start=0;start<bytes.length;start+=2048){const hex=Array.from(bytes.subarray(start,start+2048),b=>b.toString(16).padStart(2,'0')).join('');terminalControl('I '+id+' '+hex);}
 }
 function insertTerminalText(id,text){const s=terminalSessions.get(id);if(s?.view)s.view.paste(text);else sendTerminal(id,text);}
-function closeTerminal(id){if(terminalSessions.has(id))terminalControl('C '+id);terminalSessions.delete(id);}
+function closeTerminal(id){const session=terminalSessions.get(id);if(session?.startup)clearTimeout(session.startup.timer);if(session)terminalControl('C '+id);terminalSessions.delete(id);}
 // Compatibility read hook for diagnostics; no custom ANSI parser remains.
 const serialScreen={text:()=>terminalSessions.get(2)?.screen.text()||terminalBootText,feed:text=>{terminalBootText=(terminalBootText+text).slice(-262144);const s=terminalSessions.get(2);if(s)terminalOutput(s,text,0);},reset:()=>{terminalBootText='';terminalSessions.get(2)?.screen.reset();}};
 function paintTerminal(){} // xterm writes asynchronously; never replace its DOM.
@@ -58,8 +78,9 @@ function receiveGuestSerial(text){
       }
       const match=/^\x1eCDMUX ([DOXE]) ([1-9][0-9]*) ([0-9a-f]*)$/.exec(line);if(!match)continue;
       const s=terminalSessions.get(Number(match[2]));if(!s)continue;
-      if(match[1]==='D'||match[1]==='E'){const bytes=Uint8Array.from(match[3].match(/../g)||[],h=>parseInt(h,16));terminalOutput(s,bytes,match[1]==='D'?bytes.length:0);}
-      if(match[1]==='X'||match[1]==='E'){s.exited=true;terminalOutput(s,'\r\n[Shell closed. Open a new terminal to start another shell.]\r\n',0);}
+      if(match[1]==='O'){s.startup={parts:[],size:0,credit:0,timer:setTimeout(()=>finishTerminalStartup(s),3000)};sendTerminal(s.id,'help\n');continue;}
+      if(match[1]==='D'||match[1]==='E'){const bytes=Uint8Array.from(match[3].match(/../g)||[],h=>parseInt(h,16));terminalStartupOutput(s,bytes,match[1]==='D'?bytes.length:0);}
+      if(match[1]==='X'||match[1]==='E'){finishTerminalStartup(s);s.exited=true;terminalOutput(s,'\r\n[Shell closed. Open a new terminal to start another shell.]\r\n',0);}
     }else if(!terminalMuxReady)appendSerial(char);
   }
 }
