@@ -1,0 +1,9 @@
+.terminal-content .xterm-terminal{white-space:normal;overflow:hidden;padding:8px;min-width:0;line-height:normal;touch-action:auto}
+.xterm-terminal .xterm{height:100%;width:100%}
+.xterm-terminal .xterm-screen{touch-action:pinch-zoom}
+.xterm-terminal .xterm-scrollable-element{overscroll-behavior:contain;background:#202125!important}
+.xterm-terminal .xterm-viewport{overscroll-behavior:contain;touch-action:pan-y;background:#202125!important}
+.xterm-terminal .terminal-input.xterm-helper-textarea{bottom:auto;font-size:16px}
+.terminal-content .terminal-touchkeys{overflow-x:auto;overscroll-behavior:contain;min-height:52px;gap:4px}
+.terminal-content .terminal-touchkeys button{flex:none}
+.compact-desktop .terminal-content .xterm-terminal{padding:6px;line-height:normal;touch-action:auto}
