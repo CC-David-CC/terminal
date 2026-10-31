@@ -13,7 +13,7 @@ per-session guest credits; preserve acknowledgement callbacks when changing the
 renderer. Never convert application documents into shell commands.
 
 Native input supports hardware typing, IME, explicit keyboard mode and dictation.
-Commands are grouped below the terminal. Clipboard access requires an explicit
+Commands are grouped below the terminal. Linux files opens an in-window guide to the temporary guest filesystem, nano and the explicit Files copy action. Clipboard access requires an explicit
 user action; guest OSC52/OSC8 cannot read/write the clipboard or open browser
 URLs. No transcript is automatically submitted as a command.
 

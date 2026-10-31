@@ -5,7 +5,7 @@ import '@xterm/xterm/css/xterm.css';
 import './terminal.css';
 
 export function mount(host){
-  const {w}=host,{make,textButton,feedback}=host.ui;
+  const {w,desktop}=host,{make,textButton,feedback}=host.ui;
   const {terminalSession,sendTerminal,sendTerminalBytes,attachTerminalRenderer,resizeTerminal}=host.terminal;
   const session=terminalSession(w.id),body=make('div','window-content terminal-content');
   const surface=make('div','terminal-body real-terminal xterm-terminal');
@@ -100,6 +100,10 @@ export function mount(host){
   command('Copy',()=>navigator.clipboard.writeText(term.getSelection()||text()).catch(()=>feedback('Select terminal text to copy.')));
   command('Paste',()=>navigator.clipboard.readText().then(data=>{if(!host.signal.aborted)term.paste(data);}).catch(()=>feedback('Use the browser paste command.')));
   command('Clear',()=>{term.clear();sendTerminal(w.id,'\f');});
-  body.append(bar);
+  const guide=make('section','terminal-guide');guide.hidden=true;guide.setAttribute('aria-label','Linux files and terminal help');
+  guide.append(make('strong','','Temporary Linux files'),make('p','','Each terminal has its own shell. Linux files are shared between these shells in this browser session, but are reset when Linux restarts or the page reloads.'),make('p','','To keep a file, open Files, choose Linux home, select the file, and use Copy to account. My files is stored separately and syncs with your account.'),make('p','','Try pwd to see the current folder, ls to list files, or nano filename to edit. In nano, Ctrl+O then Enter saves; Ctrl+X exits.'));
+  const openFiles=textButton('Open Files',()=>{guide.hidden=true;info.setAttribute('aria-expanded','false');desktop.launch('files');});guide.append(openFiles);
+  const info=command('Linux files',()=>{guide.hidden=!guide.hidden;info.setAttribute('aria-expanded',String(!guide.hidden));});info.setAttribute('aria-expanded','false');info.setAttribute('aria-label','Linux files and terminal help');
+  body.append(guide,bar);
   return {element:body,dispose:cleanup};
 }
