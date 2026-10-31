@@ -26,7 +26,7 @@ function finishTerminalStartup(s,stripBanner=false){
   let output=bytes;
   if(stripBanner){
     let text='';for(let i=0;i<bytes.length;i+=8192)text+=String.fromCharCode(...bytes.subarray(i,i+8192));
-    const match=/BusyBox v[^\r\n]*built-in shell \(ash\)\r?\nEnter 'help' for a list of built-in commands\.\r?\n/.exec(text);
+    const match=/BusyBox v[^\r\n]*built-in shell \(ash\)\r?\n(?:help\r?\n)?Enter 'help' for a list of built-in commands\.\r?\n/.exec(text);
     if(match){output=new Uint8Array(bytes.length-match[0].length);output.set(bytes.subarray(0,match.index));output.set(bytes.subarray(match.index+match[0].length),match.index);}
   }
   if(output.length)terminalOutput(s,output,startup.credit);else acknowledgeTerminal(s,startup.credit);
