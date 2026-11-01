@@ -75,9 +75,17 @@ export function mount(host){
   disposables.push(term.parser.registerOscHandler(52,()=>true),term.parser.registerOscHandler(8,()=>true));
   surface.followOutput=()=>{w.terminalFollow=true;surface.dataset.followOutput='true';term.scrollToBottom();};
   disposables.push(term.onData(data=>{surface.followOutput();sendTerminal(w.id,data);}),term.onBinary(data=>sendTerminalBytes(w.id,Uint8Array.from(data,c=>c.charCodeAt(0)))),term.onResize(size=>resizeTerminal(w.id,size.cols,size.rows)),term.onScroll(()=>{w.terminalFollow=term.buffer.active.viewportY===term.buffer.active.baseY;surface.dataset.followOutput=String(w.terminalFollow);}));
+  async function copyText(){
+    try { if(typeof navigator.clipboard?.writeText!=='function')throw Error('Clipboard unavailable');await navigator.clipboard.writeText(term.getSelection()||text()); }
+    catch { if(!disposed&&!host.signal.aborted)feedback('Copy is unavailable. Use the browser copy command.'); }
+  }
+  async function pasteText(){
+    try { if(typeof navigator.clipboard?.readText!=='function')throw Error('Clipboard unavailable');const data=await navigator.clipboard.readText();if(!disposed&&!host.signal.aborted)term.paste(data); }
+    catch { if(!disposed&&!host.signal.aborted)feedback('Paste is unavailable. Use the browser paste command.'); }
+  }
   term.attachCustomKeyEventHandler(event=>{
     if(event.ctrlKey&&event.shiftKey&&event.code==='KeyC'){
-      if(event.type==='keydown'){event.preventDefault();navigator.clipboard.writeText(term.getSelection()||text()).catch(()=>feedback('Select terminal text to copy.'));}return false;
+      if(event.type==='keydown'){event.preventDefault();void copyText();}return false;
     }
     return true;
   });
@@ -97,8 +105,8 @@ export function mount(host){
   for(const [label,value,title] of [['Ctrl+C','\x03','Interrupt or cancel'],['Ctrl+O','\x0f','nano: save, then Enter to confirm the filename'],['Ctrl+X','\x18','nano: exit'],['Tab','\t','Complete a shell command or insert a tab'],['Esc','\x1b','Escape or cancel'],['Enter','\r','Enter or confirm']]){
     command(label,()=>{surface.followOutput();sendTerminal(w.id,value);}).title=title;
   }
-  command('Copy',()=>navigator.clipboard.writeText(term.getSelection()||text()).catch(()=>feedback('Select terminal text to copy.')));
-  command('Paste',()=>navigator.clipboard.readText().then(data=>{if(!host.signal.aborted)term.paste(data);}).catch(()=>feedback('Use the browser paste command.')));
+  command('Copy',copyText);
+  command('Paste',pasteText);
   command('Clear',()=>{term.clear();sendTerminal(w.id,'\f');});
   const guide=make('section','terminal-guide');guide.hidden=true;guide.setAttribute('aria-label','Linux files and terminal help');
   guide.append(make('strong','','Temporary Linux files'),make('p','','Each terminal has its own shell. Linux files are shared between these shells in this browser session, but are reset when Linux restarts or the page reloads.'),make('p','','To keep a file, open Files, choose Linux home, select the file, and use Copy to account. My files is stored separately and syncs with your account.'),make('p','','Try pwd to see the current folder, ls to list files, or nano filename to edit. In nano, Ctrl+O then Enter saves; Ctrl+X exits.'));

@@ -16,6 +16,9 @@ Native input supports hardware typing, IME, explicit keyboard mode and dictation
 Commands are grouped below the terminal. Linux files opens an in-window guide to the temporary guest filesystem, nano and the explicit Files copy action. Clipboard access requires an explicit
 user action; guest OSC52/OSC8 cannot read/write the clipboard or open browser
 URLs. No transcript is automatically submitted as a command.
+If the browser does not provide clipboard access or permission is denied,
+Copy and Paste show an in-desktop message suggesting the browser command.
+A pending clipboard read cannot paste after its terminal window has closed.
 
 On touch screens, drag the terminal text down to reveal older scrollback and
 up to return toward newer output. The app translates single-finger vertical
