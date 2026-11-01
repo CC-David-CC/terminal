@@ -33,3 +33,7 @@ This scrolls terminal history; it does not send arrow keys to full-screen apps.
 Build with active-system/scripts/build-public-apps.py. The generic builder
 packages imports, CSS and notices. Verification includes real v86/nano/browser
 checks and repeated open/close cleanup, not only mocked terminal methods.
+
+A cancelled touch scroll releases click suppression so the next mouse click
+works. Desktop and emulated-phone checks used the real Linux guest; physical
+touch remains unverified.

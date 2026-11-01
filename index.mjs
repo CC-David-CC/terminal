@@ -36,11 +36,11 @@ export function mount(host){
   };
   const endSwipe=event=>{
     if(!swipe||event.pointerId!==swipe.id)return;
-    const {id,moved}=swipe;swipe=null;suppressClick=moved;
+    const {id,moved}=swipe;swipe=null;suppressClick=moved&&event.type==='pointerup';
     if(screen.hasPointerCapture(id))screen.releasePointerCapture(id);
   };
   listen('pointerdown',event=>{
-    if(event.pointerType!=='touch')return;
+    if(event.pointerType!=='touch'){suppressClick=false;return;}
     if(swipe){endSwipe({pointerId:swipe.id});return;}
     suppressClick=false;
     if(!event.isPrimary)return;
