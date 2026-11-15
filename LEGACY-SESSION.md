@@ -1,0 +1,11 @@
+# Retained terminal session/startup source
+
+`active-system/terminal.js` retains the original CDMUX/2/PTTY startup/output/session/renderer glue. `tests/terminal-startup.test.mjs` is the exact original test and keeps its relative source locator; no shim or assertion change is needed. It runs three startup-output assertions in a Node VM against the retained source, without starting Linux/v86, real PTYs, a browser or a host process. These are source/reference unit assertions, not a real-guest workflow test.
+
+The existing view still depends on the legacy `host.terminal`, `host.ui`, `host.w` and desktop interfaces. The retained glue also references old guest/global state. New Runtime/Desktop public interfaces and a deliberate Linux session/transport boundary must replace those dependencies before enabling this application. Preserve separate PTY/job/view identities; disposing a view must not silently destroy a shared service/job. Authorized human/agent operations must use the same domain path with explicit instance/session/resource scope. No permanent sys.path/global-object adapter or hidden dual host contract should be added.
+
+Historical upgrade/scroll/touch/voice notes are retained under `legacy/docs/`. They describe old behavior and decisions; their reported results and instructions are not current acceptance or authority to run host commands. No current microphone, touch, clipboard, shell, account-file or guest-build qualification is claimed here.
+
+Original source snapshot `4f72ea86928666189b32f6f05c2c697a37341d06`; unchanged filtered baseline `4d15d6f44c48a616a291a83e4ad0e2f14d6b0c37`; mechanical merge `b393b3897b107cf4e11cb684ab84a4dd2034da01`. Private phase43 contains explicit earlier paths and commit/ref maps, original-scope and byte/mode proofs. Existing `index.mjs` and CSS are unchanged. All six added source/documentation bodies and modes match the captured tree. Metadata follows the mechanical merge separately.
+
+Terminal and Linux/v86 remain optional and are not dependencies of Calculator/Files/Text/WordCraft. No guest, service or deployment is enabled by this retention. Original dependencies/assets, actual xterm/guest build, current mount/cleanup behavior and scoped agent operation acceptance remain open.

@@ -37,3 +37,5 @@ checks and repeated open/close cleanup, not only mocked terminal methods.
 A cancelled touch scroll releases click suppression so the next mouse click
 works. Desktop and emulated-phone checks used the real Linux guest; physical
 touch remains unverified.
+
+The original PTY/session/startup source, unchanged startup assertions and historical notes are now retained here. See [legacy session source](LEGACY-SESSION.md) for the explicit host/transport port gates. Three reference assertions pass; no actual Linux/Terminal workflow is qualified or enabled.
