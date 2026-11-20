@@ -19,7 +19,7 @@ function terminalOutput(s,data,credit){
   s.pending.push({data,credit});s.pendingBytes+=size;
 }
 // Suppress only the initial ash banner, including when it spans serial frames.
-// The command itself runs inside the real PTY; later shell output is untouched.
+// Later shell output is untouched. Startup must not inject input into the PTY.
 function finishTerminalStartup(s,stripBanner=false){
   const startup=s.startup;if(!startup)return;s.startup=null;clearTimeout(startup.timer);
   const bytes=new Uint8Array(startup.size);let offset=0;for(const part of startup.parts){bytes.set(part,offset);offset+=part.length;}
@@ -73,12 +73,15 @@ function receiveGuestSerial(text){
       const line=terminalMuxLine.slice(0,-1).replace(/\r$/,'');terminalMuxLine='';
       if(line==='\x1eCDMUX R 2'){
         if(serialFrame){cancelAnimationFrame(serialFrame);flushSerial();}
-        terminalMuxReady=true;guestState='ready';guestMessage='Independent xterm Linux shells are ready.';
+        if(guestAccountDevice&&!terminalBootText.includes('Shared home mounted at /home/guest')){
+          failGuest('My files could not be mounted as Linux home.');return;
+        }
+        terminalMuxReady=true;guestState='ready';guestMessage=guestAccountDevice?'Linux is ready. Home is My files.':'Linux is ready. Guest files are temporary.';
         terminalBootText='';for(const s of terminalSessions.values()){s.screen.reset();terminalControl('O '+s.id+' '+s.cols+' '+s.rows);}refreshTerminals();continue;
       }
       const match=/^\x1eCDMUX ([DOXE]) ([1-9][0-9]*) ([0-9a-f]*)$/.exec(line);if(!match)continue;
       const s=terminalSessions.get(Number(match[2]));if(!s)continue;
-      if(match[1]==='O'){s.startup={parts:[],size:0,credit:0,timer:setTimeout(()=>finishTerminalStartup(s),3000)};sendTerminal(s.id,'help\n');continue;}
+      if(match[1]==='O'){s.startup={parts:[],size:0,credit:0,timer:setTimeout(()=>finishTerminalStartup(s),3000)};continue;}
       if(match[1]==='D'||match[1]==='E'){const bytes=Uint8Array.from(match[3].match(/../g)||[],h=>parseInt(h,16));terminalStartupOutput(s,bytes,match[1]==='D'?bytes.length:0);}
       if(match[1]==='X'||match[1]==='E'){finishTerminalStartup(s);s.exited=true;terminalOutput(s,'\r\n[Shell closed. Open a new terminal to start another shell.]\r\n',0);}
     }else if(!terminalMuxReady)appendSerial(char);
