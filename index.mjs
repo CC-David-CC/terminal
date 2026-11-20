@@ -109,7 +109,7 @@ export function mount(host){
   command('Paste',pasteText);
   command('Clear',()=>{term.clear();sendTerminal(w.id,'\f');});
   const guide=make('section','terminal-guide');guide.hidden=true;guide.setAttribute('aria-label','Linux files and terminal help');
-  guide.append(make('strong','','Temporary Linux files'),make('p','','Each terminal has its own shell. Linux files are shared between these shells in this browser session, but are reset when Linux restarts or the page reloads.'),make('p','','To keep a file, open Files, choose Linux home, select the file, and use Copy to account. My files is stored separately and syncs with your account.'),make('p','','Try pwd to see the current folder, ls to list files, or nano filename to edit. In nano, Ctrl+O then Enter saves; Ctrl+X exits.'));
+  guide.append(make('strong','','Temporary Linux files'),make('p','','Each terminal has its own shell. Linux files are shared between these shells and reset when Linux restarts or the page reloads.'),make('p','','Files displays your account storage. Files created in this shell stay in the temporary Linux home.'),make('p','','Try pwd to see the current folder, ls to list files, or nano filename to edit. In nano, Ctrl+O then Enter saves; Ctrl+X exits.'));
   const openFiles=textButton('Open Files',()=>{guide.hidden=true;info.setAttribute('aria-expanded','false');desktop.launch('files');});guide.append(openFiles);
   const info=command('Linux files',()=>{guide.hidden=!guide.hidden;info.setAttribute('aria-expanded',String(!guide.hidden));});info.setAttribute('aria-expanded','false');info.setAttribute('aria-label','Linux files and terminal help');
   body.append(guide,bar);
