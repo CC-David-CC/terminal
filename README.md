@@ -1,9 +1,11 @@
 # Terminal
 
 A trusted API2 app using bundled xterm.js, Fit and Serialize addons. Each window
-attaches to a separate Linux PTY supplied by the host; it does not start a server
-shell. The versioned guest image includes nano. Guest files are RAM-only unless
-explicitly downloaded or copied to a registered account's server files.
+attaches to a separate PTY in the browser's Linux guest. The versioned guest
+image includes nano. With the My files home enabled, the signed-in Linux home
+is the account workspace. An anonymous Linux home uses temporary guest My files.
+Download guest files before ending the session. Use `/tmp` for temporary work
+while signed in.
 
 The app owns its terminal renderer, observer and event subscriptions. Dispose
 releases these resources; replacing a view retains the shell and serialized
@@ -35,7 +37,9 @@ packages imports, CSS and notices. Verification includes real v86/nano/browser
 checks and repeated open/close cleanup, not only mocked terminal methods.
 
 A cancelled touch scroll releases click suppression so the next mouse click
-works. Desktop and emulated-phone checks used the real Linux guest; physical
-touch remains unverified.
+works. The [WebOS device checks](docs/webos-qa/PHONE.md) cover the physical
+Galaxy S10+, desktop Chromium and the current viewer.
 
-The original PTY/session/startup source, unchanged startup assertions and historical notes are now retained here. See [legacy session source](LEGACY-SESSION.md) for the explicit host/transport port gates. Three reference assertions pass; no actual Linux/Terminal workflow is qualified or enabled.
+The original PTY/session/startup source and historical startup assertions are
+retained here. See [legacy session source](LEGACY-SESSION.md) for its explicit
+host and transport gates.
