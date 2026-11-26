@@ -9,7 +9,7 @@
 .compact-desktop .terminal-content .xterm-terminal{padding:6px;line-height:normal;touch-action:auto}
 
 .terminal-content{position:relative}
-.terminal-guide{position:absolute;z-index:4;bottom:60px;right:8px;left:8px;max-height:60%;overflow:auto;background:#f6f5f4;color:#272c30;border:1px solid #a8aaa8;border-radius:6px;padding:12px;font:14px/1.45 system-ui,sans-serif;box-shadow:0 3px 12px #0006}
+.terminal-guide{position:absolute;z-index:4;bottom:60px;right:8px;left:8px;max-height:60%;overflow:auto;background:var(--desktop-surface,#252a30);color:var(--desktop-text,#f3f6f8);border:1px solid var(--desktop-border,#56616c);border-radius:6px;padding:12px;font:14px/1.45 system-ui,sans-serif;box-shadow:0 3px 12px #0006}
 .terminal-guide[hidden]{display:none}
 .terminal-guide p{margin:8px 0}.terminal-guide button{min-height:44px;padding:8px 12px}
 .compact-desktop .terminal-guide{bottom:112px}

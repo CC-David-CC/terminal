@@ -109,10 +109,16 @@ export function mount(host){
   command('Paste',pasteText);
   command('Clear',()=>{term.clear();sendTerminal(w.id,'\f');});
   const guide=make('section','terminal-guide');guide.hidden=true;guide.setAttribute('aria-label','Linux files and terminal help');
-  const accountHome=host.terminal.accountHome?.()===true;
+  const workspaceHome=host.terminal.accountHome?.()===true;
+  const guest=host.session?.()?.public?.kind==='anonymous';
+  const sharedAccountHome=workspaceHome&&!guest;
+  let homeDescription='Each terminal has its own shell. They share a temporary home that resets when Linux restarts or the page reloads.';
+  if(workspaceHome)homeDescription=guest
+    ?'Your Linux home appears in this guest session’s temporary My files. Download files you want to keep before ending the session.'
+    :'Your Linux home is the same workspace shown in My files. Use /tmp for temporary work.';
   guide.append(
-    make('strong','',accountHome?'My files in Linux':'Temporary Linux files'),
-    make('p','',accountHome?'Your home directory is the same account workspace shown in Files. Use /tmp for temporary work.':'Each terminal has its own shell. They share a temporary home that resets when Linux restarts or the page reloads.'),
+    make('strong','',sharedAccountHome?'My files in Linux':'Temporary Linux files'),
+    make('p','',homeDescription),
     make('p','','Try pwd to see the current folder, ls to list files, or nano filename to edit. In nano, Ctrl+O then Enter saves; Ctrl+X exits.')
   );
   const openFiles=textButton('Open Files',()=>{guide.hidden=true;info.setAttribute('aria-expanded','false');desktop.launch('files');});guide.append(openFiles);
